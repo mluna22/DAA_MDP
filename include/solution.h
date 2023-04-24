@@ -25,25 +25,24 @@
 */
 class Solution {
  public:
-  Solution(int d);
+  Solution();
   std::set<int>::iterator begin() const;
   std::set<int>::iterator end() const;
   void insert(int i);
+  void erase(int i);
   void clear();
   const int size() const;
-  const double evaluate(const Problem& problem);
+  const double evaluate(const Problem& problem) const;
   const bool operator==(const Solution& other) const;
   const bool operator!=(const Solution& other) const;
-  Solution swap_search(const Problem& problem);
+  Point centroid(const Problem& problem) const;
+  Solution swap_search(const Problem& problem) const;
   friend std::ostream& operator<<(std::ostream& os, Solution& solution);
  private:
-  int dimensions_;
   std::set<int> points_;
 };
 
-Solution::Solution(int d) {
-  dimensions_ = d;
-}
+Solution::Solution() {}
 
 std::set<int>::iterator Solution::begin() const {
   return points_.begin();
@@ -57,6 +56,10 @@ void Solution::insert(int i) {
   points_.insert(i);
 }
 
+void Solution::erase(int i) {
+  points_.erase(i);
+}
+
 void Solution::clear() {
   points_.clear();
 }
@@ -65,7 +68,7 @@ const int Solution::size() const {
   return points_.size();
 }
 
-const double Solution::evaluate(const Problem& problem) {
+const double Solution::evaluate(const Problem& problem) const {
   double sum_of_distances{0};
   for (std::set<int>::iterator point{points_.begin()}; point != points_.end(); ++point) {
     std::set<int>::iterator other_point{point};
@@ -85,7 +88,20 @@ const bool Solution::operator!=(const Solution& other) const {
   return points_ != other.points_;
 }
 
-Solution Solution::swap_search(const Problem& problem) {
+Point Solution::centroid(const Problem& points) const {
+  Point centroid(points[0].size(), 0);
+  for (int point: points_) {
+    for (int i{0}; i < centroid.size(); ++i) {
+      centroid[i] += points[point][i];
+    }
+  }
+  for (int i{0}; i < centroid.size(); ++i) {
+    centroid[i] /= points_.size();
+  }
+  return centroid;
+}
+
+Solution Solution::swap_search(const Problem& problem) const {
   double best_evaluation{evaluate(problem)};
   Solution best_solution = *this;
   for (int point: points_) {
@@ -106,8 +122,10 @@ Solution Solution::swap_search(const Problem& problem) {
 }
 
 std::ostream& operator<<(std::ostream& os, Solution& solution) {
-  for (int point: solution) {
-    os << point << " ";
+  std::set<int>::iterator point{solution.begin()};
+  os << *point;
+  for (++point; point != solution.end(); ++point) {
+    os << "-" << *point;
   }
   return os;
 }

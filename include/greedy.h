@@ -31,15 +31,15 @@ class Greedy {
 Greedy::Greedy() {}
 
 Solution Greedy::solve(const Problem& problem, int k) {
-  Solution solution(problem.dimensions());
-  std::set<int> remaining_points;
+  Solution solution;
+  Solution remaining_points;
   for (int i{0}; i < problem.size(); ++i) {
     remaining_points.insert(i);
   }
+  Point center = remaining_points.centroid(problem);
   while (solution.size() < k) {
     int best_point{0};
-    Point center = problem.centroid(remaining_points);
-    double best_distance{euclidean_distance(problem[0], center)};
+    double best_distance{0};
     for (int point: remaining_points) {
       double distance{euclidean_distance(problem[point], center)};
       if (distance > best_distance) {
@@ -49,6 +49,7 @@ Solution Greedy::solve(const Problem& problem, int k) {
     }
     solution.insert(best_point);
     remaining_points.erase(best_point);
+    center = solution.centroid(problem);
   }
   
   return solution;

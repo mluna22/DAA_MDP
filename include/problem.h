@@ -62,19 +62,6 @@ class Problem {
     points_.pop_back();
   }
 
-  Point centroid(const std::set<int>& points) const {
-    Point centroid(points_[0].size(), 0);
-    for (int point: points) {
-      for (int i{0}; i < centroid.size(); ++i) {
-        centroid[i] += points_[point][i];
-      }
-    }
-    for (int i{0}; i < centroid.size(); ++i) {
-      centroid[i] /= points.size();
-    }
-    return centroid;
-  }
-
  private:
   std::vector<Point> points_;
 };
