@@ -17,15 +17,25 @@
 #include <vector>
 #include <chrono>
 
-#include "problem.h"
 #include "greedy.h"
+#include "local_search.h"
 
 #define N_EXECUTIONS 4
 
-void printGreedy(std::ostream& os, std::string instance_path, Problem& problem, Greedy& greedy) {
+void printGreedy(std::ostream& os, std::string instance_path, Problem& problem, Greedy& algorithm) {
   for (int m{2}; m < N_EXECUTIONS + 2; ++m) {
     auto start = std::chrono::high_resolution_clock::now();
-    Solution solution = greedy.solve(problem, m);
+    Solution solution = algorithm.solve(problem, m);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    os << instance_path << "," << problem.size() << "," << problem.dimensions() << "," << m << "," << solution.evaluate(problem) << "," << solution << "," << elapsed.count() << std::endl;
+  }
+}
+
+void printLocalSearch(std::ostream& os, std::string instance_path, Problem& problem, Local_Search& algoritm) {
+  for (int m{2}; m < N_EXECUTIONS + 2; ++m) {
+    auto start = std::chrono::high_resolution_clock::now();
+    Solution solution = algoritm.solve(problem, m);
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;
     os << instance_path << "," << problem.size() << "," << problem.dimensions() << "," << m << "," << solution.evaluate(problem) << "," << solution << "," << elapsed.count() << std::endl;
@@ -64,6 +74,15 @@ int main(int argc, char** argv) {
     std::string instance_path = entry.path();
     Problem matrix = loadProblem(instance_path);
     printGreedy(std::cout, instance_path, matrix, greedy);
+  }
+
+  Local_Search localsearch;
+  std::cout << "Algoritmo de búsqueda local" << std::endl;
+  std::cout << "Problema,n,k,m,z,S,CPU(s)" << std::endl;
+  for (const auto& entry : std::filesystem::directory_iterator(instance_folder)) {
+    std::string instance_path = entry.path();
+    Problem matrix = loadProblem(instance_path);
+    printLocalSearch(std::cout, instance_path, matrix, localsearch);
   }
 
   return 0;
