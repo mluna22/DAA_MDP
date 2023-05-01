@@ -34,4 +34,14 @@ double euclidean_distance(const Point& a, const Point& b) {
   return sqrt(distance);
 }
 
+template <class T>
+T random(const std::set<T>& set) {
+  T random_number{int(rand() % set.size())};
+  auto it{set.begin()};
+  for (T i{0}; i < random_number; ++i) {
+    ++it;
+  }
+  return *it;
+}
+
 #endif  // UTILITIES_H

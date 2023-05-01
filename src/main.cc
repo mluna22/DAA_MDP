@@ -19,6 +19,7 @@
 
 #include "greedy.h"
 #include "local_search.h"
+#include "grasp.h"
 
 #define N_EXECUTIONS 4
 
@@ -42,6 +43,20 @@ void printLocalSearch(std::ostream& os, std::string instance_path, Problem& prob
   }
 }
 
+void printGRASP(std::ostream& os, std::string instance_path, Problem& problem, GRASP& algoritm) {
+  for (int m{2}; m < N_EXECUTIONS + 2; ++m) {
+    for (int iterations = 10; iterations <= 20; iterations = iterations + 10) {
+      for (int lrc_size = 2; lrc_size <= 3; ++lrc_size) {
+        auto start = std::chrono::high_resolution_clock::now();
+        Solution solution = algoritm.solve(problem, m, iterations, lrc_size);
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
+        os << instance_path << "," << problem.size() << "," << problem.dimensions() << "," << m << "," << iterations << "," << lrc_size << "," << solution.evaluate(problem) << "," << solution << "," << elapsed.count() << std::endl;
+      }
+    }
+  }
+}
+
 Problem loadProblem(std::string instance_path) {
   std::ifstream file(instance_path);
   if (!file.is_open()) {
@@ -61,6 +76,7 @@ Problem loadProblem(std::string instance_path) {
 }
 
 int main(int argc, char** argv) {
+  srand(time(0));
   if (argc < 2) {
     std::cout << "Usage: " << argv[0] << " <instance_folder>" << std::endl;
     return 1;
@@ -83,6 +99,15 @@ int main(int argc, char** argv) {
     std::string instance_path = entry.path();
     Problem matrix = loadProblem(instance_path);
     printLocalSearch(std::cout, instance_path, matrix, localsearch);
+  }
+
+  GRASP grasp;
+  std::cout << "Algoritmo GRASP" << std::endl;
+  std::cout << "Problema,n,k,m,Iter,|LRC|,z,S,CPU(s)" << std::endl;
+  for (const auto& entry : std::filesystem::directory_iterator(instance_folder)) {
+    std::string instance_path = entry.path();
+    Problem matrix = loadProblem(instance_path);
+    printGRASP(std::cout, instance_path, matrix, grasp);
   }
 
   return 0;
