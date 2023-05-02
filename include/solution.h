@@ -36,7 +36,7 @@ class Solution {
   const bool operator==(const Solution& other) const;
   const bool operator!=(const Solution& other) const;
   Point centroid(const Problem& problem) const;
-  Solution swap_search(const Problem& problem) const;
+  Solution swap_search(const Problem& problem, double& value) const;
   friend std::ostream& operator<<(std::ostream& os, Solution& solution);
  private:
   std::set<int> points_;
@@ -101,16 +101,22 @@ Point Solution::centroid(const Problem& points) const {
   return centroid;
 }
 
-Solution Solution::swap_search(const Problem& problem) const {
-  double best_evaluation{evaluate(problem)};
+Solution Solution::swap_search(const Problem& problem, double& value) const {
+  double best_evaluation{value};
   Solution best_solution = *this;
   for (int point: points_) {
     for (int i{0}; i < problem.size(); ++i) {
-      if (best_solution.points_.find(i) == best_solution.points_.end()) {
+      if (points_.find(i) == points_.end()) {
         Solution new_solution = *this;
         new_solution.points_.erase(point);
         new_solution.points_.insert(i);
-        double new_evaluation{new_solution.evaluate(problem)};
+        double new_evaluation{value};
+        for (int point_check: points_) {
+          if (point_check != point) {
+            new_evaluation -= euclidean_distance(problem[point], problem[point_check]);
+            new_evaluation += euclidean_distance(problem[i], problem[point_check]);
+          }
+        }
         if (new_evaluation > best_evaluation) {
           best_evaluation = new_evaluation;
           best_solution = new_solution;
@@ -118,6 +124,7 @@ Solution Solution::swap_search(const Problem& problem) const {
       }
     }
   }
+  value = best_evaluation;
   return best_solution;
 }
 

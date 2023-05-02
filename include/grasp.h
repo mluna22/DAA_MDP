@@ -65,12 +65,15 @@ Solution GRASP::solve(const Problem& problem, int k, int iterations, int lrc_siz
       center = solution.centroid(problem);
     }
     Solution search_solution;
+    double oldvalue = solution.evaluate(problem);
+    double newvalue = oldvalue;
     do {
-      search_solution = solution.swap_search(problem);
-      if (search_solution.evaluate(problem) > solution.evaluate(problem)) {
+      search_solution = solution.swap_search(problem, newvalue);
+      if (newvalue > oldvalue) {
         solution = search_solution;
+        oldvalue = newvalue;
       }
-    } while (search_solution.evaluate(problem) > solution.evaluate(problem));
+    } while (newvalue > oldvalue);
     if (solution.evaluate(problem) > best_solution.evaluate(problem)) {
       best_solution = solution;
     }

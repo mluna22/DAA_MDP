@@ -48,13 +48,16 @@ Solution Local_Search::solve(const Problem& problem, int k) {
     remaining_points.erase(best_point);
     center = solution.centroid(problem);
   }
-  Solution best_solution = solution;
+  Solution best_solution;
+  double oldvalue = solution.evaluate(problem);
+  double newvalue = oldvalue;
   do {
-    best_solution = solution.swap_search(problem);
-    if (best_solution.evaluate(problem) > solution.evaluate(problem)) {
+    best_solution = solution.swap_search(problem, newvalue);
+    if (newvalue > oldvalue) {
       solution = best_solution;
+      oldvalue = newvalue;
     }
-  } while (best_solution.evaluate(problem) > solution.evaluate(problem));
+  } while (newvalue > oldvalue);
   return solution;
 }
 
