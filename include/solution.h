@@ -37,6 +37,7 @@ class Solution {
   const bool operator!=(const Solution& other) const;
   Point centroid(const Problem& problem) const;
   Solution swap_search(const Problem& problem, double& value) const;
+  bool has_point(int i) const;
   friend std::ostream& operator<<(std::ostream& os, Solution& solution);
  private:
   std::set<int> points_;
@@ -126,6 +127,10 @@ Solution Solution::swap_search(const Problem& problem, double& value) const {
   }
   value = best_evaluation;
   return best_solution;
+}
+
+bool Solution::has_point(int i) const {
+  return points_.find(i) != points_.end();
 }
 
 std::ostream& operator<<(std::ostream& os, Solution& solution) {
