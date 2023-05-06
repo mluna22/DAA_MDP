@@ -67,27 +67,27 @@ std::vector<std::vector<double>> Branch_Bound::calculate_distances(const Problem
 Solution Branch_Bound::solve(const Problem& problem, int m, double lower_bound, int& generated_nodes, bool depth_search) {
   Solution best_solution;
   std::vector<std::vector<double>> distances = calculate_distances(problem);
-  int solution_size{0};
   std::priority_queue<Node> nodes;
-  Node exploring_node(best_solution, lower_bound, 0);
-  while (solution_size < m) {
-    for (int i{0}; i < problem.size(); ++i) {
-      if (exploring_node.get_solution().has_point(i)) continue;
-      Solution new_solution = exploring_node.get_solution();
-      new_solution.insert(i);
-      double upper_bound = calculate_upper_bound(new_solution, problem, distances, m);
-      generated_nodes++;
-      if (upper_bound < lower_bound) continue;
-      Node new_node(new_solution, upper_bound, depth_search ? exploring_node.get_level() + 1 : 0);
-      nodes.push(new_node);
-    }
-    if (nodes.empty()) break;
+  Node exploring_node(best_solution, lower_bound, -1, 0);
+  nodes.push(exploring_node);
+  generated_nodes = 1;
+  while (!nodes.empty()) {
     exploring_node = nodes.top();
     nodes.pop();
+    for (int i{exploring_node.get_tag() + 1}; i < (problem.size() - (m - exploring_node.get_level())); ++i) {
+      Solution new_solution = exploring_node.get_solution();
+      if (new_solution.size() == m) continue;
+      new_solution.insert(i);
+      generated_nodes++;
+      double upper_bound = calculate_upper_bound(new_solution, problem, distances, m);
+      if (upper_bound < lower_bound) continue;
+      Node new_node(new_solution, upper_bound, i, exploring_node.get_level() + 1);
+      nodes.push(new_node);
+    }
     if (exploring_node.get_upper_bound() < lower_bound) continue;
-    if (exploring_node.get_solution().size() > solution_size) {
-      solution_size = exploring_node.get_solution().size();
+    if (exploring_node.get_solution().size() == m && exploring_node.get_solution().evaluate(problem) > best_solution.evaluate(problem)) {
       best_solution = exploring_node.get_solution();
+      lower_bound = best_solution.evaluate(problem);
     }
   }
   return best_solution;
