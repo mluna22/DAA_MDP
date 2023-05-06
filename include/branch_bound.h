@@ -21,8 +21,17 @@
 #include "solution.h"
 #include "node.h"
 
-auto compare_nodes = [](std::pair<Solution, double>& node1, std::pair<Solution, double>& node2) {
-  return node1.second < node2.second;
+struct compare_nodes_by_upper_bound {
+  bool operator()(Node node1, Node node2) {
+    return node1.get_upper_bound() < node2.get_upper_bound();
+  }
+};
+
+struct compare_nodes_by_depth {
+  bool operator()(Node node1, Node node2) {
+    if (node1.get_depth() == node2.get_depth()) return node1.get_upper_bound() < node2.get_upper_bound();
+    return node1.get_depth() < node2.get_depth();
+  }
 };
 
 class Branch_Bound {
@@ -67,22 +76,23 @@ std::vector<std::vector<double>> Branch_Bound::calculate_distances(const Problem
 Solution Branch_Bound::solve(const Problem& problem, int m, double lower_bound, int& generated_nodes, bool depth_search) {
   Solution best_solution;
   std::vector<std::vector<double>> distances = calculate_distances(problem);
-  std::priority_queue<Node> nodes;
+  std::priority_queue<Node, std::vector<Node>, compare_nodes_by_upper_bound> nodes_by_upper_bound;
+  std::priority_queue<Node, std::vector<Node>, compare_nodes_by_depth> nodes_by_depth;
   Node exploring_node(best_solution, lower_bound, -1, 0);
-  nodes.push(exploring_node);
+  depth_search ? nodes_by_depth.push(exploring_node) : nodes_by_upper_bound.push(exploring_node);
   generated_nodes = 1;
-  while (!nodes.empty()) {
-    exploring_node = nodes.top();
-    nodes.pop();
-    for (int i{exploring_node.get_tag() + 1}; i < (problem.size() - (m - exploring_node.get_level())); ++i) {
+  while (depth_search ? !nodes_by_depth.empty() : !nodes_by_upper_bound.empty()) {
+    exploring_node = depth_search ? nodes_by_depth.top() : nodes_by_upper_bound.top();
+    depth_search ? nodes_by_depth.pop() : nodes_by_upper_bound.pop();
+    for (int i{exploring_node.get_tag() + 1}; i < (problem.size() - (m - exploring_node.get_depth())); ++i) {
       Solution new_solution = exploring_node.get_solution();
       if (new_solution.size() == m) continue;
       new_solution.insert(i);
       generated_nodes++;
       double upper_bound = calculate_upper_bound(new_solution, problem, distances, m);
       if (upper_bound < lower_bound) continue;
-      Node new_node(new_solution, upper_bound, i, exploring_node.get_level() + 1);
-      nodes.push(new_node);
+      Node new_node(new_solution, upper_bound, i, exploring_node.get_depth() + 1);
+      depth_search ? nodes_by_depth.push(new_node) : nodes_by_upper_bound.push(new_node);
     }
     if (exploring_node.get_upper_bound() < lower_bound) continue;
     if (exploring_node.get_solution().size() == m && exploring_node.get_solution().evaluate(problem) > best_solution.evaluate(problem)) {

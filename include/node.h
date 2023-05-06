@@ -21,24 +21,24 @@
 
 class Node {
  public:
-  Node(Solution solution, double upper_bound, int tag, int level);
+  Node(Solution solution, double upper_bound, int tag, int depth);
   Solution get_solution() const;
   double get_upper_bound() const;
   int get_tag() const;
-  int get_level() const;
-  const bool operator<(const Node& other) const; 
+  int get_depth() const;
+  // const bool operator<(const Node& other) const; 
  private:
   Solution solution_;
   double upper_bound_;
   int tag_;
-  int level_;
+  int depth_;
 };
 
-Node::Node(Solution solution, double upper_bound, int tag, int level) {
+Node::Node(Solution solution, double upper_bound, int tag, int depth) {
   solution_ = solution;
   upper_bound_ = upper_bound;
   tag_ = tag;
-  level_ = level;
+  depth_ = depth;
 }
 
 Solution Node::get_solution() const {
@@ -53,15 +53,9 @@ int Node::get_tag() const {
   return tag_;
 }
 
-int Node::get_level() const {
-  return level_;
+int Node::get_depth() const {
+  return depth_;
 }
 
-const bool Node::operator<(const Node& other) const {
-  if (level_ == other.level_) {
-    return upper_bound_ < other.upper_bound_;
-  }
-  return level_ < other.level_;
-}
 
 #endif  // GRAPH_H_
