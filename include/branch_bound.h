@@ -84,6 +84,7 @@ Solution Branch_Bound::solve(const Problem& problem, int m, double lower_bound, 
   while (depth_search ? !nodes_by_depth.empty() : !nodes_by_upper_bound.empty()) {
     exploring_node = depth_search ? nodes_by_depth.top() : nodes_by_upper_bound.top();
     depth_search ? nodes_by_depth.pop() : nodes_by_upper_bound.pop();
+    if (exploring_node.get_upper_bound() < lower_bound) continue;
     for (int i{exploring_node.get_tag() + 1}; i < (problem.size() - (m - exploring_node.get_depth())); ++i) {
       Solution new_solution = exploring_node.get_solution();
       if (new_solution.size() == m) continue;
@@ -94,7 +95,6 @@ Solution Branch_Bound::solve(const Problem& problem, int m, double lower_bound, 
       Node new_node(new_solution, upper_bound, i, exploring_node.get_depth() + 1);
       depth_search ? nodes_by_depth.push(new_node) : nodes_by_upper_bound.push(new_node);
     }
-    if (exploring_node.get_upper_bound() < lower_bound) continue;
     if (exploring_node.get_solution().size() == m && exploring_node.get_solution().evaluate(problem) > best_solution.evaluate(problem)) {
       best_solution = exploring_node.get_solution();
       lower_bound = best_solution.evaluate(problem);
