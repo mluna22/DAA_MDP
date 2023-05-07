@@ -49,7 +49,7 @@ void GRASP::insertLRC(std::set<int>& lrc, Solution remaining_points, const Probl
 
 Solution GRASP::solve(const Problem& problem, int k, int iterations, int lrc_size) {
   Solution best_solution;
-  for (int i{0}; i < iterations; ++i) {
+  for (int iteration{0}; iteration < iterations;) {
     Solution solution;
     Solution remaining_points;
     for (int i{0}; i < problem.size(); ++i) {
@@ -76,6 +76,8 @@ Solution GRASP::solve(const Problem& problem, int k, int iterations, int lrc_siz
     } while (newvalue > oldvalue);
     if (solution.evaluate(problem) > best_solution.evaluate(problem)) {
       best_solution = solution;
+    } else {
+      ++iteration;
     }
   }
   return best_solution;
